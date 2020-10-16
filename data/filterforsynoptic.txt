@@ -1,0 +1,30 @@
+
+COLON
+BREAST
+PROSTATE
+UTERUS or OMENTUM - UTERUS
+LUNG
+KIDNEY
+PANCREAS or WHIPPLE - PANCREAS
+TESTIS 
+BLADDER or cystectomy or cystoprostatectomy - BLADDER
+TONSIL or ADENOIDS - TONSIL ADENOIDS
+
+----------------
+
+filter result type Surgical
+Contains Skin
+Contains Biopsy
+Contains Biopsies
+Contains excision
+contains blood
+contains curettage
+contains leep
+contains trans-urethral
+contains TRANSURETHRAL
+contains TURBT
+contains polyp
+contains gallbladder
+
+------------------
+random 10%
