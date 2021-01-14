@@ -2,12 +2,20 @@
 
 # load libraries
 library(dplyr)
+library(here)
 
 # load "sample_up" function to select random cases and round up if n <10
-source("./src/fcn_random.R")
+source(here("src", "fcn_random.R"))
 
 # load synoptic data
-synoptics_raw <- readxl::read_excel("./data/2020-q3-synoptic-raw.xls")
+# synoptics_raw <- 
+#   list.files(path = here("data"), 
+#              pattern = "(\\d){4}(-\\D\\d-).+\\.xls",
+#              full.names = TRUE) %>% 
+#   sapply(readxl::read_excel, simplify = FALSE) %>% 
+#   bind_rows()
+
+synoptics_raw <- readxl::read_excel("./data/2020-q4-synoptic-raw.xls")
 
 # filter, categorize data and select relevant cases
 synoptics <- 
@@ -54,4 +62,4 @@ synoptics <-
   select(c(Site, Accession))
 
 # make Excel file with list of sampled sites and corresponding accessions
-# writexl::write_xlsx(synoptics, "./output/2020_Q3_synoptics.xlsx")
+writexl::write_xlsx(synoptics, here("output", "2020_Q4_synoptics.xlsx"))
