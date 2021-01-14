@@ -21,6 +21,7 @@ synoptics_raw <- readxl::read_excel("./data/2020-q4-synoptic-raw.xls")
 synoptics <- 
   synoptics_raw %>% 
   filter(
+    client != "UCHEALTH SOUTH",
     `result type` == "Surgical",
     !grepl("skin", `site label`, ignore.case = TRUE),
     !grepl("biopsy", `site label`, ignore.case = TRUE),
