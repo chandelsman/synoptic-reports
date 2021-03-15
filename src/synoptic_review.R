@@ -15,7 +15,7 @@ source(here("src", "fcn_random.R"))
 #   sapply(readxl::read_excel, simplify = FALSE) %>% 
 #   bind_rows()
 
-synoptics_raw <- readxl::read_excel("./data/2020-q4-synoptic-raw.xls")
+synoptics_raw <- readxl::read_excel(here("data", "2020-q4-synoptic-raw.xls"))
 
 # filter, categorize data and select relevant cases
 synoptics <- 

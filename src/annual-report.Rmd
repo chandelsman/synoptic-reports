@@ -1,0 +1,118 @@
+---
+title: ''
+output: 
+  html_document
+params:
+  dt_start: 
+    label: "Start Date"
+    input: date
+    value: !r Sys.Date()-10
+    max: !r Sys.Date()
+  dt_end: 
+    label: "End Date"
+    input: date
+    value: !r Sys.Date()-1
+    max: !r Sys.Date()
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(lubridate)
+library(gt)
+```
+
+```{r load-data, message=FALSE, warning=FALSE}
+synoptic_reviewed <- readxl::read_excel(
+  here::here("data", "2020-synoptic-processed.xlsx")) %>% 
+  rename(
+    Quarter = `Select a Quarter`, 
+    Site = `Enter in Body Site`, 
+    perf_met = `Synoptic Report Elements Present`
+  ) %>% 
+  group_by(Quarter, Site) %>% 
+  summarize(n = n(), deficient = sum(perf_met == "No")) %>% 
+  pivot_wider(names_from = Quarter, values_from = c(n, deficient)) %>% 
+    replace(is.na(.), 0)
+```
+
+```{r count-cases, message=FALSE}
+synoptic_count <- 
+  list.files(path = here::here("data"),
+             pattern = "(\\d{4})-(\\D\\d)-(synoptic-raw\\.xls)", 
+             full.names = TRUE) %>% 
+  sapply(readxl::read_excel, simplify = FALSE) %>% 
+  bind_rows()
+
+n_cases <- count(synoptic_count)
+```
+
+```{r count-samples, message=FALSE}
+synoptic_samples <- 
+  list.files(path = here::here("output"),
+             pattern = "(\\d{4})_(\\D\\d)_(synoptics\\.xlsx)",
+             full.names = TRUE) %>% 
+  sapply(readxl::read_excel, simplify = FALSE) %>% 
+  bind_rows()
+
+n_samples <- count(synoptic_samples)
+```
+
+
+```{r clean-data, message=FALSE, warning=FALSE}
+synoptic_reviewed %>% 
+  rename(
+    Quarter = `Select a Quarter`, 
+    Site = `Enter in Body Site`, 
+    perf_met = `Synoptic Report Elements Present`
+  ) %>% 
+  group_by(Quarter, Site) %>% 
+  summarize(n = n(), deficient = sum(perf_met == "No")) %>% 
+  pivot_wider(names_from = Quarter, values_from = c(n, deficient))
+```
+
+## `r lubridate::year(params$dt_start) - 1` Self-audit of Synoptic Reporting  
+
+```{r samples by site}
+synoptic_reviewed %>% 
+  gt(rowname_col = "Site") %>% 
+  tab_header(title = md("**Malignant Cases Sampled per Site**"),
+             subtitle = "") %>%
+  tab_spanner(
+    label = "Number of Cases Sampled",
+    columns = vars(n_Q1, n_Q2, n_Q3, n_Q4)
+  ) %>% 
+  tab_spanner(
+    label = "Deficiencies Found",
+    columns = vars(deficient_Q1, deficient_Q2, deficient_Q3, deficient_Q4)
+  ) %>%
+  cols_label(
+    n_Q1 = "Q1", 
+    n_Q2 = "Q2", 
+    n_Q3 = "Q3", 
+    n_Q4 = "Q4", 
+    deficient_Q1 = "Q1", 
+    deficient_Q2 = "Q2", 
+    deficient_Q3 = "Q3", 
+    deficient_Q4 = "Q4"
+  ) %>% 
+  grand_summary_rows(
+    fns = "sum", 
+    fmt_number(
+      columns = vars(everything()), 
+      decimals = 0)
+  ) %>% 
+  tab_options(column_labels.font.weight = "bold",
+              table.font.size = 12,
+              table.width = pct(100)) %>% 
+  tab_style(
+    style = list(
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = Site == "Total")
+  )
+```
+
