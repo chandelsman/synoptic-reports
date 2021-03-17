@@ -3,6 +3,9 @@ title: ''
 output: 
   html_document
 params:
+  author:
+    label: Prepared by
+    value: Corey Handelsman
   dt_start: 
     label: "Start Date"
     input: date
@@ -60,26 +63,36 @@ synoptic_samples <-
 n_samples <- count(synoptic_samples)
 ```
 
+```{r summary-stats, message=FALSE, warning=FALSE}
+n_audit <- 
+  synoptic_reviewed %>% 
+  summarize(total = sum(c(n_Q1, n_Q2, n_Q3, n_Q4)))
 
-```{r clean-data, message=FALSE, warning=FALSE}
-# synoptic_reviewed %>% 
-#   rename(
-#     Quarter = `Select a Quarter`, 
-#     Site = `Enter in Body Site`, 
-#     perf_met = `Synoptic Report Elements Present`
-#   ) %>% 
-#   group_by(Quarter, Site) %>% 
-#   summarize(n = n(), deficient = sum(perf_met == "No")) %>% 
-#   pivot_wider(names_from = Quarter, values_from = c(n, deficient))
+n_deficient <- 
+  synoptic_reviewed %>% 
+  summarize(total = sum(c(deficient_Q1, deficient_Q2, deficient_Q3, deficient_Q4)))
 ```
 
-## `r lubridate::year(params$dt_start) - 1` Self-audit of Synoptic Reporting  
 
-```{r samples by site}
+<center>
+
+![](sp-logo.png){width=30%}
+
+# `r lubridate::year(params$dt_start) - 1` Self-audit of Synoptic Reporting
+
+</center>
+
+## Summary of findings
+
+Ten percent of malignant cases were randomly sampled and reviewed for compliance with synoptic reporting protocols. We audited `r n_audit` cases in `r lubridate::year(params$dt_start) - 1` and found that `r n_deficient`/`r n_audit` cases were deficient in at least one data element, yielding an estimated error rate of `r round(n_deficient / n_audit, 2)`. Details of quarterly sampling by site are summarized in the table below.
+
+<br><br>
+
+```{r samples by site, message=FALSE, warning=FALSE}
 synoptic_reviewed %>% 
   gt(rowname_col = "Site") %>% 
-  tab_header(title = md("**Malignant Cases Sampled per Site**"),
-             subtitle = "") %>%
+  tab_header(title = md("**Quarterly Audit of Malignant Cases by Site**"),
+             subtitle = md("")) %>%
   tab_spanner(
     label = "Number of Cases Sampled",
     columns = vars(n_Q1, n_Q2, n_Q3, n_Q4)
@@ -90,10 +103,17 @@ synoptic_reviewed %>%
   ) %>%
   grand_summary_rows(
     columns = 2:9, # vars(n_Q1, n_Q2, n_Q3, n_Q4), 
-    fns = "sum", 
+    fns = list(
+      Total = ~sum(.)
+    ), 
     missing_text = "---",
-    formatter = fmt_number
+    formatter = fmt_number, 
+    decimals = 0
   ) %>%
+  tab_footnote(
+    footnote = md("10% of malignant cases were randomly selected every quarter from each site. A minimum of one case was audited for sites where 1 \u2264 *n* < 10 cases."), 
+    locations = cells_column_spanners("Number of Cases Sampled")
+  ) %>% 
   cols_label(
     n_Q1 = "Q1", 
     n_Q2 = "Q2", 
@@ -104,15 +124,26 @@ synoptic_reviewed %>%
     deficient_Q3 = "Q3", 
     deficient_Q4 = "Q4"
   ) %>% 
+  cols_align(align = "right", columns = 2:9) %>% 
   tab_options(column_labels.font.weight = "bold",
               table.font.size = 12,
               table.width = pct(100)) %>% 
   tab_style(
-    style = list(
-      cell_text(weight = "bold")
-    ),
-    locations = cells_body(
-      rows = Site == "Total")
-  )
+    style = list(cell_text(weight = "bold"),
+                 cell_text(align = "right")),
+    locations = cells_column_labels(columns = TRUE)
+  ) %>% 
+  tab_options(table.width = pct(85))
 ```
 
+<br><br>
+
+<div style = "text-align: left">
+
+**Medical Director :**_________________________________ [**Date:** ________________]{style="float:right"}
+
+<br>
+
+*Prepared by `r params$author` on `r format(as.Date(Sys.Date()), "%m/%d/%Y")`*
+
+</div>
