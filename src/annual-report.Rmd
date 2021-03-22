@@ -86,8 +86,6 @@ n_deficient <-
 
 Ten percent of malignant cases were randomly sampled and reviewed for compliance with synoptic reporting protocols. We audited `r n_audit` cases in `r lubridate::year(params$dt_start) - 1` and found that `r n_deficient`/`r n_audit` cases were deficient in at least one data element, yielding an estimated error rate of `r round(n_deficient / n_audit, 2)`. Details of quarterly sampling by site are summarized in the table below.
 
-<br><br>
-
 ```{r samples by site, message=FALSE, warning=FALSE}
 synoptic_reviewed %>% 
   gt(rowname_col = "Site") %>% 
@@ -136,13 +134,17 @@ synoptic_reviewed %>%
   tab_options(table.width = pct(85))
 ```
 
-<br><br>
+<br>
 
 <div style = "text-align: left">
 
-**Medical Director :**_________________________________ [**Date:** ________________]{style="float:right"}
+**Corrective Action:**_________________________________________________________________________
 
 <br>
+
+<div style = "text-align: left">
+
+**Medical Director:**_________________________________ [**Date:** ________________]{style="float:right"}
 
 *Prepared by `r params$author` on `r format(as.Date(Sys.Date()), "%m/%d/%Y")`*
 
