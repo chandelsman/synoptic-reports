@@ -3,19 +3,20 @@
 # load libraries
 library(dplyr)
 library(here)
+library(lubridate)
 
 # load "sample_up" function to select random cases and round up if n <10
 source(here("src", "fcn_random.R"))
 
 # load synoptic data
-# synoptics_raw <- 
-#   list.files(path = here("data"), 
-#              pattern = "(\\d){4}(-\\D\\d-).+\\.xls",
-#              full.names = TRUE) %>% 
-#   sapply(readxl::read_excel, simplify = FALSE) %>% 
-#   bind_rows()
-
-synoptics_raw <- readxl::read_excel(here("data", "2020-q4-synoptic-raw.xls"))
+synoptics_raw <-
+  list.files(path = here("data"),
+             pattern = "(\\d){4}(\\D\\d-).+\\.xls",
+             full.names = TRUE) %>%
+  sapply(readxl::read_excel, simplify = FALSE) %>%
+  bind_rows() %>% 
+  mutate(created_date = date(mdy_hm(created_date))) %>% 
+  filter(quarter(created_date) == quarter(Sys.Date()) - 1)
 
 # filter, categorize data and select relevant cases
 synoptics <- 
@@ -59,8 +60,8 @@ synoptics <-
   ) %>% 
   filter(Site != "---") %>% 
   group_by(Site) %>% 
-  sample_up(0.1) %>% 
-  select(c(Site, Accession))
+  sample_up(0.15) %>% 
+  select(c(created_date, Site, Accession))
 
 # make Excel file with list of sampled sites and corresponding accessions
-writexl::write_xlsx(synoptics, here("output", "2020_Q4_synoptics.xlsx"))
+writexl::write_xlsx(synoptics, here("output", "2021_Q1_synoptics.xlsx"))
